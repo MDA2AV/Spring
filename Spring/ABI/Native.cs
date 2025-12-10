@@ -99,6 +99,18 @@ public static unsafe class Native
     /// </remarks>
     /// </summary>
     [DllImport("uringshim")] internal static extern io_uring* shim_create_ring(uint entries, out int err);
+    
+    
+    [DllImport("uringshim")]
+    internal static extern uint shim_get_ring_flags(io_uring* ring);
+    
+    [DllImport("uringshim")]
+    internal static extern io_uring* shim_create_ring_ex(
+        uint entries,
+        uint flags,
+        int  sq_thread_cpu,
+        uint sq_thread_idle_ms,
+        out int err);
 
     /// <summary>
     /// Destroys a ring created with <see cref="shim_create_ring"/> and releases native resources.
@@ -300,6 +312,10 @@ public static unsafe class Native
     internal const int F_SETFL      = 4;
     internal const int O_NONBLOCK   = 0x800;
     internal const int SOCK_NONBLOCK= 0x800; // for accept4/Socket flags (matches Linux)
+    
+    internal const uint IORING_SETUP_IOPOLL  = 1u << 0;
+    internal const uint IORING_SETUP_SQPOLL  = 1u << 1;
+    internal const uint IORING_SETUP_SQ_AFF  = 1u << 2;
 
     /// <summary>
     /// IPv4 address storage (network byte order).

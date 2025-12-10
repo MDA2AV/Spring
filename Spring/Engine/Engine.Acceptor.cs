@@ -17,7 +17,27 @@ public sealed unsafe partial class OverdriveEngine
         {
             Console.WriteLine($"[acceptor] Listening on {ip}:{port}");
 
+            
             pring = shim_create_ring(256, out int err);
+            
+            // SQPOLL
+            /*const uint flags = IORING_SETUP_SQPOLL;
+            // Pin SQPOLL thread to CPU 0 (for example) and let it idle 2000ms before sleeping.
+            int  sqThreadCpu     = 0;
+            uint sqThreadIdleMs  = 2000;
+            pring = shim_create_ring_ex(
+                256,
+                flags,
+                sqThreadCpu,
+                sqThreadIdleMs,
+                out int err);*/
+            
+            var ringFlags = shim_get_ring_flags(pring);
+            Console.WriteLine($"[acceptor] ring flags = 0x{ringFlags:x} " +
+                              $"(SQPOLL={(ringFlags & IORING_SETUP_SQPOLL) != 0}, " +
+                              $"SQ_AFF={(ringFlags & IORING_SETUP_SQ_AFF) != 0})");
+            
+            
             if (pring == null || err < 0)
             {
                 Console.Error.WriteLine($"[acceptor] create_ring failed: {err}");

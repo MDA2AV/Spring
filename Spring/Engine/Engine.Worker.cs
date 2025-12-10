@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.ObjectPool;
-using Overdrive.HttpProtocol;
 using static Overdrive.ABI.Native;
 
 namespace Overdrive.Engine;
@@ -54,6 +53,11 @@ public sealed unsafe partial class OverdriveEngine
         internal void InitPRing()
         {
             PRing = shim_create_ring((uint)s_ringEntries, out var err);
+            
+            var ringFlags = shim_get_ring_flags(PRing);
+            Console.WriteLine($"[w{_workerIndex}] ring flags = 0x{ringFlags:x} " +
+                              $"(SQPOLL={(ringFlags & IORING_SETUP_SQPOLL) != 0}, " +
+                              $"SQ_AFF={(ringFlags & IORING_SETUP_SQ_AFF) != 0})");
             
             if (PRing == null || err < 0)
             {
@@ -135,8 +139,6 @@ public sealed unsafe partial class OverdriveEngine
         {
             while (!StopAll)
             {
-                //Thread.Sleep(1);
-                
                 //
                 // 1) Drain new connections → arm recv multishot
                 //
@@ -303,15 +305,6 @@ public sealed unsafe partial class OverdriveEngine
 
                     shim_cqe_seen(pring, cqe);
                 }
-
-                //
-                // 5) Submit all SQEs we queued this iteration
-                //
-                /*if (shim_sq_ready(pring) > 0)
-                {
-                    //Console.WriteLine("Submitting2");
-                    shim_submit(pring);
-                }*/
             }
         }
         finally

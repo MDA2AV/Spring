@@ -13,7 +13,7 @@ internal static class Program
         var builder = OverdriveEngine
             .CreateBuilder()
             //.SetWorkersSolver(() => Environment.ProcessorCount / 2)
-            .SetWorkersSolver(() => 32)
+            .SetWorkersSolver(() => 16)
             .SetBacklog(16 * 1024)
             .SetPort(8080)
             .SetRecvBufferSize(32 * 1024);
@@ -34,7 +34,7 @@ internal static class Program
     
     internal static async ValueTask HandleAsync(Connection connection)
     {
-        Console.WriteLine("Handling connection..");
+        Console.WriteLine("start");
         try
         {
             while (true)
@@ -54,6 +54,19 @@ internal static class Program
                     {
                         Console.WriteLine("Failed to queue send");
                     }
+                        
+                    /*connection.OutPtr  = okPtr;
+                    connection.OutHead = 0;
+                    connection.OutTail = okLen;
+                    connection.Sending = true;
+                    
+                    //DIOGO HERE, CAN WE SEND HERE TO AVOID THE CHANNEL? THE CHANNEL IS INCREASING LATENCY TOO MUCH??
+                    OverdriveEngine.SubmitSend(
+                        OverdriveEngine.s_Workers[connection.WorkerIndex].PRing,
+                        connection.Fd,
+                        connection.OutPtr,
+                        connection.OutHead,
+                        connection.OutTail);*/
                 }
             }
         }
@@ -61,5 +74,7 @@ internal static class Program
         {
             Console.WriteLine(e);
         }
+
+        Console.WriteLine("end");
     }
 }
